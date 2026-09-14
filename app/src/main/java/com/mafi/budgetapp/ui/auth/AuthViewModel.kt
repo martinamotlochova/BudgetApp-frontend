@@ -9,9 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class AuthViewModel(
-    private val tokenDataStore: TokenDataStore
-) : ViewModel() {
+class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
 
     private val mutableLoginState: MutableStateFlow<LoginState> =
         MutableStateFlow(LoginState.Idle)

@@ -17,33 +17,37 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
     val loginState: StateFlow<LoginState> = mutableLoginState
 
     fun login(email: String, password: String) {
-        mutableLoginState.value = LoginState.Loading
+        if (email.isNotEmpty() && password.isNotEmpty()) {
+            mutableLoginState.value = LoginState.Loading
 
-        viewModelScope.launch {
-            try {
-                val request = LoginRequest(email = email, password = password)
-                val response = RetrofitClient.authApiService.login(request)
+            viewModelScope.launch {
+                try {
+                    val request = LoginRequest(email = email, password = password)
+                    val response = RetrofitClient.authApiService.login(request)
 
-                if (response.isSuccessful) {
-                    val loginResponse = response.body()
+                    if (response.isSuccessful) {
+                        val loginResponse = response.body()
 
-                    if (loginResponse != null) {
-                        tokenDataStore.saveToken(loginResponse.token)
+                        if (loginResponse != null) {
+                            tokenDataStore.saveToken(loginResponse.token)
 
-                        mutableLoginState.value = LoginState.Success(
-                            token = loginResponse.token,
-                            userName = loginResponse.user.name
-                        )
+                            mutableLoginState.value = LoginState.Success(
+                                token = loginResponse.token,
+                                userName = loginResponse.user.name
+                            )
+                        } else {
+                            mutableLoginState.value =
+                                LoginState.Error("Prázdna odpoveď zo servera.")
+                        }
                     } else {
-                        mutableLoginState.value = LoginState.Error("Prázdna odpoveď zo servera.")
+                        mutableLoginState.value = LoginState.Error("Nesprávny email alebo heslo.")
                     }
-                } else {
-                    mutableLoginState.value = LoginState.Error("Nesprávny email alebo heslo.")
+                } catch (e: Exception) {
+                    mutableLoginState.value = LoginState.Error("Chyba pripojenia: ${e.message}")
                 }
-            } catch (e: Exception) {
-                mutableLoginState.value = LoginState.Error("Chyba pripojenia: ${e.message}")
             }
-        }
+        } else {
+            mutableLoginState.value = LoginState.Error("Please fill in email and password")
+        }   }
     }
-}
 

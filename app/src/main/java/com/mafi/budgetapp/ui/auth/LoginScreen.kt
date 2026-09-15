@@ -36,7 +36,7 @@ fun LoginScreen(authViewModel: AuthViewModel) {
         OutlinedTextField(
             value = password,
             onValueChange = { newValue -> password = newValue },
-            label = { Text("Heslo") },
+            label = { Text("Password") },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -44,7 +44,7 @@ fun LoginScreen(authViewModel: AuthViewModel) {
             onClick = { authViewModel.login(email, password) },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Prihlásiť sa")
+            Text("Log in")
         }
 
         when (loginState) {
@@ -57,10 +57,9 @@ fun LoginScreen(authViewModel: AuthViewModel) {
             }
             is LoginState.Success -> {
                 val successState = loginState as LoginState.Success
-                Text("Prihlásená ako: ${successState.userName}")
+                Text("Logged in as: ${successState.userName}")
             }
             is LoginState.Idle -> {
-                // nič nezobrazuj
             }
         }
     }

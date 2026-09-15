@@ -3,45 +3,29 @@ package com.mafi.budgetapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mafi.budgetapp.data.local.TokenDataStore
+import com.mafi.budgetapp.ui.auth.AuthViewModel
+import com.mafi.budgetapp.ui.auth.AuthViewModelFactory
+import com.mafi.budgetapp.ui.auth.LoginScreen
 import com.mafi.budgetapp.ui.theme.BudgetAppTheme
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             BudgetAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                val context = LocalContext.current
+                val tokenDataStore = TokenDataStore(context)
+                val authViewModel: AuthViewModel = viewModel(
+                    factory = AuthViewModelFactory(tokenDataStore)
+                )
+
+                LoginScreen(authViewModel = authViewModel)
                 }
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    BudgetAppTheme {
-        Greeting("Android")
-    }
-}

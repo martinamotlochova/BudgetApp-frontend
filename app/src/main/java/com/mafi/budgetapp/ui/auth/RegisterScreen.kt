@@ -8,6 +8,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -15,13 +16,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mafi.budgetapp.utils.isEmailValid
+import com.mafi.budgetapp.utils.isPasswordValid
 
 @Composable
-fun RegisterScreen(authViewModel: AuthViewModel) {
+fun RegisterScreen(authViewModel: AuthViewModel, onRegisterSuccess: () -> Unit) {
 
     var name by remember { mutableStateOf("")}
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    val isEmailFieldValid = email.isEmpty() || isEmailValid(email)
+    val isPasswordFieldValid = password.isEmpty() || isPasswordValid(password)
 
     val registerState by authViewModel.registerState.collectAsStateWithLifecycle()
 
@@ -38,6 +44,12 @@ fun RegisterScreen(authViewModel: AuthViewModel) {
             value = email,
             onValueChange = { newValue -> email = newValue },
             label = { Text("Email") },
+            isError = !isEmailFieldValid,
+            supportingText = {
+                if (!isEmailFieldValid) {
+                    Text("Invalid email format")
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -45,6 +57,12 @@ fun RegisterScreen(authViewModel: AuthViewModel) {
             value = password,
             onValueChange = { newValue -> password = newValue },
             label = { Text("Password") },
+            isError = !isPasswordFieldValid,
+            supportingText = {
+                if (!isPasswordFieldValid) {
+                    Text("Min 8 characters, uppercase letter, digit, special character")
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -64,8 +82,10 @@ fun RegisterScreen(authViewModel: AuthViewModel) {
                 Text(errorState.message)
             }
             is RegisterState.Success -> {
-                val successState = registerState as RegisterState.Success
                 Text("Registration completed!")
+                LaunchedEffect(Unit) {
+                    onRegisterSuccess()
+                }
             }
             is RegisterState.Idle -> {
             }

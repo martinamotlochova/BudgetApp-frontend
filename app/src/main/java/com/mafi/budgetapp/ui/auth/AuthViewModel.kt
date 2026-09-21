@@ -9,6 +9,8 @@ import com.mafi.budgetapp.data.remote.dto.RegisterRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import com.mafi.budgetapp.utils.isEmailValid
+import com.mafi.budgetapp.utils.isPasswordValid
 
 class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
 
@@ -23,7 +25,10 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
     val registerState: StateFlow<RegisterState> = mutableRegisterState
 
     fun login(email: String, password: String) {
-        if (email.isNotEmpty() && password.isNotEmpty()) {
+        val emailValid = isEmailValid(email)
+        val passwordValid = isPasswordValid(password)
+
+        if (email.isNotEmpty() && password.isNotEmpty() && emailValid && passwordValid) {
             mutableLoginState.value = LoginState.Loading
 
             viewModelScope.launch {
@@ -46,20 +51,34 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
                                 LoginState.Error("Prázdna odpoveď zo servera.")
                         }
                     } else {
-                        mutableLoginState.value = LoginState.Error("Wrong email or password")
+                        mutableLoginState.value = LoginState.Error("Nesprávny email alebo heslo.")
                     }
                 } catch (e: Exception) {
-                    mutableLoginState.value = LoginState.Error("Connection failed: ${e.message}")
+                    mutableLoginState.value = LoginState.Error("Chyba pripojenia: ${e.message}")
                 }
             }
         } else {
-            mutableLoginState.value = LoginState.Error("Please fill in email and password")
+            mutableLoginState.value = LoginState.Error(
+                "Heslo musí mať aspoň 8 znakov, veľké písmeno, číslo a špeciálny znak"
+            )
         }
     }
 
 
     fun register(email: String, name: String, password: String) {
-        if (email.isNotEmpty() && password.isNotEmpty() && name.isNotEmpty()) {
+        val nameValid = name.isNotEmpty()
+        val emailValid = isEmailValid(email)
+        val passwordValid = isPasswordValid(password)
+
+        if (!nameValid) {
+            mutableRegisterState.value = RegisterState.Error("Meno nesmie byť prázdne")
+        } else if (!emailValid) {
+            mutableRegisterState.value = RegisterState.Error("Neplatný formát emailu")
+        } else if (!passwordValid) {
+            mutableRegisterState.value = RegisterState.Error(
+                "Heslo musí mať aspoň 8 znakov, veľké písmeno, číslo a špeciálny znak"
+            )
+        } else {
             mutableRegisterState.value = RegisterState.Loading
 
             viewModelScope.launch {
@@ -86,8 +105,6 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
                         RegisterState.Error("Connection failed: ${e.message}")
                 }
             }
-        } else {
-            mutableRegisterState.value = RegisterState.Error("Please fill in email and password")
         }
     }
 }

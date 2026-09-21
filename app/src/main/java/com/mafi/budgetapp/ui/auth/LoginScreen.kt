@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mafi.budgetapp.utils.isEmailValid
 
 @Composable
 fun LoginScreen(authViewModel: AuthViewModel) {
@@ -24,12 +25,20 @@ fun LoginScreen(authViewModel: AuthViewModel) {
 
     val loginState by authViewModel.loginState.collectAsStateWithLifecycle()
 
+    val isEmailFieldValid = email.isEmpty() || isEmailValid(email)
+
     Column(modifier = Modifier.padding(16.dp)) {
 
         OutlinedTextField(
             value = email,
             onValueChange = { newValue -> email = newValue },
             label = { Text("Email") },
+            isError = !isEmailFieldValid,
+            supportingText = {
+                if (!isEmailFieldValid) {
+                    Text("Invalid email format")
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -57,7 +66,7 @@ fun LoginScreen(authViewModel: AuthViewModel) {
             }
             is LoginState.Success -> {
                 val successState = loginState as LoginState.Success
-                Text("Logged in as: ${successState.userName}")
+                Text("Prihlásená ako: ${successState.userName}")
             }
             is LoginState.Idle -> {
             }

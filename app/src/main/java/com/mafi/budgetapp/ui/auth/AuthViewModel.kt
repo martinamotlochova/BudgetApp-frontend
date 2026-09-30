@@ -28,7 +28,17 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
         val emailValid = isEmailValid(email)
         val passwordValid = isPasswordValid(password)
 
-        if (email.isNotEmpty() && password.isNotEmpty() && emailValid && passwordValid) {
+        if (email.isEmpty()) {
+            mutableLoginState.value = LoginState.Error("Email cannot be empty")
+        } else if (!emailValid) {
+            mutableLoginState.value = LoginState.Error("Invalid email format")
+        } else if (password.isEmpty()) {
+            mutableLoginState.value = LoginState.Error("Password cannot be empty")
+        } else if (!passwordValid) {
+            mutableLoginState.value = LoginState.Error(
+                "Password must be at least 8 characters long, with an uppercase letter, a digit, and a special character"
+            )
+        } else {
             mutableLoginState.value = LoginState.Loading
 
             viewModelScope.launch {
@@ -40,27 +50,25 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
                         val loginResponse = response.body()
 
                         if (loginResponse != null) {
-                            tokenDataStore.saveToken(loginResponse.token)
-
+                            tokenDataStore.saveTokens(
+                                accessToken = loginResponse.accessToken,
+                                refreshToken = loginResponse.refreshToken
+                            )
                             mutableLoginState.value = LoginState.Success(
-                                token = loginResponse.token,
+                                token = loginResponse.accessToken,
                                 userName = loginResponse.user.name
                             )
                         } else {
                             mutableLoginState.value =
-                                LoginState.Error("Prázdna odpoveď zo servera.")
+                                LoginState.Error("Empty response from server.")
                         }
                     } else {
-                        mutableLoginState.value = LoginState.Error("Nesprávny email alebo heslo.")
+                        mutableLoginState.value = LoginState.Error("Incorrect email or password.")
                     }
                 } catch (e: Exception) {
-                    mutableLoginState.value = LoginState.Error("Chyba pripojenia: ${e.message}")
+                    mutableLoginState.value = LoginState.Error("Connection failed: ${e.message}")
                 }
             }
-        } else {
-            mutableLoginState.value = LoginState.Error(
-                "Heslo musí mať aspoň 8 znakov, veľké písmeno, číslo a špeciálny znak"
-            )
         }
     }
 
@@ -71,12 +79,12 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
         val passwordValid = isPasswordValid(password)
 
         if (!nameValid) {
-            mutableRegisterState.value = RegisterState.Error("Meno nesmie byť prázdne")
+            mutableRegisterState.value = RegisterState.Error("Name cannot be empty")
         } else if (!emailValid) {
-            mutableRegisterState.value = RegisterState.Error("Neplatný formát emailu")
+            mutableRegisterState.value = RegisterState.Error("Invalid email format")
         } else if (!passwordValid) {
             mutableRegisterState.value = RegisterState.Error(
-                "Heslo musí mať aspoň 8 znakov, veľké písmeno, číslo a špeciálny znak"
+                "Password must be at least 8 characters long, with an uppercase letter, a digit, and a special character"
             )
         } else {
             mutableRegisterState.value = RegisterState.Loading
@@ -94,7 +102,7 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
                                 RegisterState.Success(userResponse = registerResponse)
                         } else {
                             mutableRegisterState.value =
-                                RegisterState.Error("Prázdna odpoveď zo servera.")
+                                RegisterState.Error("Empty response from server.")
                         }
                     } else {
                         mutableRegisterState.value =

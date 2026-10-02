@@ -2,6 +2,7 @@ package com.mafi.budgetapp.data.remote
 
 import com.mafi.budgetapp.data.remote.dto.LoginRequest
 import com.mafi.budgetapp.data.remote.dto.LoginResponse
+import com.mafi.budgetapp.data.remote.dto.RefreshRequest
 import com.mafi.budgetapp.data.remote.dto.RegisterRequest
 import com.mafi.budgetapp.data.remote.dto.UserResponse
 import retrofit2.Response
@@ -15,4 +16,7 @@ interface AuthApiService {
 
     @POST("api/auth/login")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+
+    @POST("api/auth/refresh")
+    suspend fun refresh(@Body request: RefreshRequest): Response<LoginResponse>
 }

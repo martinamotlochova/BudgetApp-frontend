@@ -16,9 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mafi.budgetapp.utils.isEmailValid
+import androidx.compose.runtime.LaunchedEffect
 
 @Composable
-fun LoginScreen(authViewModel: AuthViewModel) {
+fun LoginScreen(authViewModel: AuthViewModel, onLoginSuccess: () -> Unit) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -65,8 +66,9 @@ fun LoginScreen(authViewModel: AuthViewModel) {
                 Text(errorState.message)
             }
             is LoginState.Success -> {
-                val successState = loginState as LoginState.Success
-                Text("Prihlásená ako: ${successState.userName}")
+                LaunchedEffect(Unit) {
+                    onLoginSuccess()
+                }
             }
             is LoginState.Idle -> {
             }

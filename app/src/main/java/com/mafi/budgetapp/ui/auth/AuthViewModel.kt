@@ -1,16 +1,19 @@
 package com.mafi.budgetapp.ui.auth
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mafi.budgetapp.data.local.TokenDataStore
 import com.mafi.budgetapp.data.remote.RetrofitClient
 import com.mafi.budgetapp.data.remote.dto.LoginRequest
+import com.mafi.budgetapp.data.remote.dto.LogoutRequest
 import com.mafi.budgetapp.data.remote.dto.RegisterRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import com.mafi.budgetapp.utils.isEmailValid
 import com.mafi.budgetapp.utils.isPasswordValid
+import kotlinx.coroutines.flow.first
 
 class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
 
@@ -113,6 +116,22 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
                         RegisterState.Error("Connection failed: ${e.message}")
                 }
             }
+        }
+    }
+
+    fun logout(OnLoggedOut: () -> Unit){
+        viewModelScope.launch {
+           try{
+               val refreshToken = tokenDataStore.getRefreshToken().first()
+               if (!refreshToken.isNullOrBlank()){
+                   RetrofitClient.authApiService.logout(LogoutRequest(refreshToken))
+               }
+           } catch (e: Exception){
+               Log.w("Auth", "Logout request failed, logging out locally", e)
+           } finally {
+               tokenDataStore.clearTokens()
+               OnLoggedOut()
+           }
         }
     }
 }

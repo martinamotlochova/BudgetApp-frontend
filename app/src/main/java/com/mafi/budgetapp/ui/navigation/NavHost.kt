@@ -10,7 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import com.mafi.budgetapp.data.local.TokenDataStore
+import com.mafi.budgetapp.BudgetApplication
 import com.mafi.budgetapp.ui.auth.AuthViewModel
 import com.mafi.budgetapp.ui.auth.AuthViewModelFactory
 import com.mafi.budgetapp.ui.auth.LoginScreen
@@ -38,13 +38,14 @@ object AppGraph {
 fun AppNavHost(
     navController: NavHostController = rememberNavController()
 ) {
-    val context = LocalContext.current
-    val tokenDataStore = TokenDataStore(context)
+    val container = (LocalContext.current.applicationContext as BudgetApplication).container
+
     val authViewModel: AuthViewModel = viewModel(
-        factory = AuthViewModelFactory(tokenDataStore)
+        factory = AuthViewModelFactory(container.tokenDataStore, container.authApiService)
     )
-    val sessionViewModel: SessionViewModel =
-        viewModel(factory = SessionViewModelFactory(tokenDataStore))
+    val sessionViewModel: SessionViewModel = viewModel(
+        factory = SessionViewModelFactory(container.tokenDataStore)
+    )
     val authState by sessionViewModel.authState.collectAsState()
 
     NavHost(navController = navController, startDestination = AppScreen.Loading.route) {

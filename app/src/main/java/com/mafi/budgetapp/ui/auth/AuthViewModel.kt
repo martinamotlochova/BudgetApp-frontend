@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mafi.budgetapp.data.local.TokenDataStore
-import com.mafi.budgetapp.data.remote.RetrofitClient
+import com.mafi.budgetapp.data.remote.AuthApiService
 import com.mafi.budgetapp.data.remote.dto.LoginRequest
 import com.mafi.budgetapp.data.remote.dto.LogoutRequest
 import com.mafi.budgetapp.data.remote.dto.RegisterRequest
@@ -15,7 +15,7 @@ import com.mafi.budgetapp.utils.isEmailValid
 import com.mafi.budgetapp.utils.isPasswordValid
 import kotlinx.coroutines.flow.first
 
-class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
+class AuthViewModel(private val tokenDataStore: TokenDataStore, private val authApiService: AuthApiService) : ViewModel() {
 
     private val mutableLoginState: MutableStateFlow<LoginState> =
         MutableStateFlow(LoginState.Idle)
@@ -47,7 +47,7 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
             viewModelScope.launch {
                 try {
                     val request = LoginRequest(email = email, password = password)
-                    val response = RetrofitClient.authApiService.login(request)
+                    val response = authApiService.login(request)
 
                     if (response.isSuccessful) {
                         val loginResponse = response.body()
@@ -95,7 +95,7 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
             viewModelScope.launch {
                 try {
                     val request = RegisterRequest(email = email, name = name, password = password)
-                    val response = RetrofitClient.authApiService.register(request)
+                    val response = authApiService.register(request)
 
                     if (response.isSuccessful) {
                         val registerResponse = response.body()
@@ -124,7 +124,7 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore) : ViewModel() {
            try{
                val refreshToken = tokenDataStore.getRefreshToken().first()
                if (!refreshToken.isNullOrBlank()){
-                   RetrofitClient.authApiService.logout(LogoutRequest(refreshToken))
+                   authApiService.logout(LogoutRequest(refreshToken))
                }
            } catch (e: Exception){
                Log.w("Auth", "Logout request failed, logging out locally", e)

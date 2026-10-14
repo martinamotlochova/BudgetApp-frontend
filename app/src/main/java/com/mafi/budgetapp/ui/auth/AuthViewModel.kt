@@ -8,14 +8,17 @@ import com.mafi.budgetapp.data.remote.AuthApiService
 import com.mafi.budgetapp.data.remote.dto.LoginRequest
 import com.mafi.budgetapp.data.remote.dto.LogoutRequest
 import com.mafi.budgetapp.data.remote.dto.RegisterRequest
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 import com.mafi.budgetapp.utils.isEmailValid
 import com.mafi.budgetapp.utils.isPasswordValid
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
-class AuthViewModel(private val tokenDataStore: TokenDataStore, private val authApiService: AuthApiService) : ViewModel() {
+class AuthViewModel(
+    private val tokenDataStore: TokenDataStore,
+    private val authApiService: AuthApiService
+) : ViewModel() {
 
     private val mutableLoginState: MutableStateFlow<LoginState> =
         MutableStateFlow(LoginState.Idle)
@@ -57,10 +60,7 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore, private val auth
                                 accessToken = loginResponse.accessToken,
                                 refreshToken = loginResponse.refreshToken
                             )
-                            mutableLoginState.value = LoginState.Success(
-                                token = loginResponse.accessToken,
-                                userName = loginResponse.user.name
-                            )
+                            mutableLoginState.value = LoginState.Success
                         } else {
                             mutableLoginState.value =
                                 LoginState.Error("Empty response from server.")
@@ -119,19 +119,19 @@ class AuthViewModel(private val tokenDataStore: TokenDataStore, private val auth
         }
     }
 
-    fun logout(OnLoggedOut: () -> Unit){
+    fun logout(OnLoggedOut: () -> Unit) {
         viewModelScope.launch {
-           try{
-               val refreshToken = tokenDataStore.getRefreshToken().first()
-               if (!refreshToken.isNullOrBlank()){
-                   authApiService.logout(LogoutRequest(refreshToken))
-               }
-           } catch (e: Exception){
-               Log.w("Auth", "Logout request failed, logging out locally", e)
-           } finally {
-               tokenDataStore.clearTokens()
-               OnLoggedOut()
-           }
+            try {
+                val refreshToken = tokenDataStore.getRefreshToken().first()
+                if (!refreshToken.isNullOrBlank()) {
+                    authApiService.logout(LogoutRequest(refreshToken))
+                }
+            } catch (e: Exception) {
+                Log.w("Auth", "Logout request failed, logging out locally", e)
+            } finally {
+                tokenDataStore.clearTokens()
+                OnLoggedOut()
+            }
         }
     }
 }

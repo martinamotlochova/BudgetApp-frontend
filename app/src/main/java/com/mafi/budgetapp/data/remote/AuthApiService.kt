@@ -8,6 +8,7 @@ import com.mafi.budgetapp.data.remote.dto.RegisterRequest
 import com.mafi.budgetapp.data.remote.dto.UserResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface AuthApiService {
@@ -23,4 +24,7 @@ interface AuthApiService {
 
     @POST("api/auth/logout")
     suspend fun logout(@Body request: LogoutRequest): Response<Unit>
+
+    @GET("api/auth/me")
+    suspend fun me(): Response<UserResponse>
 }

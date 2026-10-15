@@ -3,10 +3,12 @@ package com.mafi.budgetapp.di
 import android.content.Context
 import com.mafi.budgetapp.data.local.TokenDataStore
 import com.mafi.budgetapp.data.remote.AuthApiService
+import com.mafi.budgetapp.data.remote.AuthInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import com.mafi.budgetapp.BuildConfig
 
 class AppContainer(context: Context) {
 
@@ -15,13 +17,19 @@ class AppContainer(context: Context) {
 
     val tokenDataStore = TokenDataStore(context)
 
-    // 2. interceptors (AuthInterceptor will be added here in task 2)
+    private val authInterceptor = AuthInterceptor(tokenDataStore)
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        level = if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor.Level.BODY
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
+        redactHeader("Authorization")
     }
 
 
     private val okHttpClient = OkHttpClient.Builder()
+        .addInterceptor(authInterceptor)
         .addInterceptor(loggingInterceptor)
         .build()
 

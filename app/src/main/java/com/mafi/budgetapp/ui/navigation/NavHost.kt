@@ -17,6 +17,8 @@ import com.mafi.budgetapp.ui.auth.LoginScreen
 import com.mafi.budgetapp.ui.auth.RegisterScreen
 import com.mafi.budgetapp.ui.auth.WelcomeScreen
 import com.mafi.budgetapp.ui.main.HomeScreen
+import com.mafi.budgetapp.ui.main.HomeViewModel
+import com.mafi.budgetapp.ui.main.HomeViewModelFactory
 import com.mafi.budgetapp.ui.session.LoadingScreen
 import com.mafi.budgetapp.ui.session.SessionViewModel
 import com.mafi.budgetapp.ui.session.SessionViewModelFactory
@@ -93,7 +95,14 @@ fun AppNavHost(
 
         navigation(startDestination = AppScreen.Home.route, route = AppGraph.MAIN) {
             composable(AppScreen.Home.route) {
+                val homeViewModel: HomeViewModel = viewModel(
+                    factory = HomeViewModelFactory(container.authApiService)
+                )
+                val homeUiState by homeViewModel.uiState.collectAsState()
+
                 HomeScreen(
+                    uiState = homeUiState,
+                    onRetryClick = { homeViewModel.loadUser() },
                     onLogoutClick = {
                         authViewModel.logout(
                             OnLoggedOut = {

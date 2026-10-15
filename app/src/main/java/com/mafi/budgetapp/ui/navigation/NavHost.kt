@@ -1,6 +1,7 @@
 package com.mafi.budgetapp.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
@@ -19,6 +20,7 @@ import com.mafi.budgetapp.ui.auth.WelcomeScreen
 import com.mafi.budgetapp.ui.main.HomeScreen
 import com.mafi.budgetapp.ui.main.HomeViewModel
 import com.mafi.budgetapp.ui.main.HomeViewModelFactory
+import com.mafi.budgetapp.ui.session.AuthState
 import com.mafi.budgetapp.ui.session.LoadingScreen
 import com.mafi.budgetapp.ui.session.SessionViewModel
 import com.mafi.budgetapp.ui.session.SessionViewModelFactory
@@ -49,6 +51,17 @@ fun AppNavHost(
         factory = SessionViewModelFactory(container.tokenDataStore)
     )
     val authState by sessionViewModel.authState.collectAsState()
+
+    LaunchedEffect(authState) {
+        if (authState == AuthState.Unauthenticated) {
+            val currentGraph = navController.currentBackStackEntry?.destination?.parent?.route
+            if (currentGraph == AppGraph.MAIN) {
+                navController.navigate(AppGraph.AUTH) {
+                    popUpTo(AppGraph.MAIN) { inclusive = true }
+                }
+            }
+        }
+    }
 
     NavHost(navController = navController, startDestination = AppScreen.Loading.route) {
 
@@ -103,15 +116,7 @@ fun AppNavHost(
                 HomeScreen(
                     uiState = homeUiState,
                     onRetryClick = { homeViewModel.loadUser() },
-                    onLogoutClick = {
-                        authViewModel.logout(
-                            OnLoggedOut = {
-                                navController.navigate(AppGraph.AUTH) {
-                                    popUpTo(AppGraph.MAIN) { inclusive = true }
-                                }
-                            }
-                        )
-                    }
+                    onLogoutClick = { authViewModel.logout() }
                 )
             }
         }

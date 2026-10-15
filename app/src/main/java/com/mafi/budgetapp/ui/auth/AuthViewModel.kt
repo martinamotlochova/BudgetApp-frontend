@@ -119,7 +119,7 @@ class AuthViewModel(
         }
     }
 
-    fun logout(OnLoggedOut: () -> Unit) {
+    fun logout() {
         viewModelScope.launch {
             try {
                 val refreshToken = tokenDataStore.getRefreshToken().first()
@@ -130,7 +130,8 @@ class AuthViewModel(
                 Log.w("Auth", "Logout request failed, logging out locally", e)
             } finally {
                 tokenDataStore.clearTokens()
-                OnLoggedOut()
+                // no navigation here: authState becomes Unauthenticated
+                // and AppNavHost navigates to Welcome
             }
         }
     }

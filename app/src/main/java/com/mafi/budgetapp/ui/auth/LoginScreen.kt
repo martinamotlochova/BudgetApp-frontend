@@ -3,20 +3,28 @@ package com.mafi.budgetapp.ui.auth
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions                 // NEW
+import androidx.compose.foundation.text.KeyboardOptions                 // NEW
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection                         // NEW
+import androidx.compose.ui.platform.LocalFocusManager                   // NEW
+import androidx.compose.ui.text.input.ImeAction                         // NEW
+import androidx.compose.ui.text.input.KeyboardType                      // NEW
+import androidx.compose.ui.text.input.PasswordVisualTransformation      // NEW
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mafi.budgetapp.ui.components.PasswordTextField
 import com.mafi.budgetapp.utils.isEmailValid
-import androidx.compose.runtime.LaunchedEffect
 
 @Composable
 fun LoginScreen(authViewModel: AuthViewModel, onLoginSuccess: () -> Unit) {
@@ -25,6 +33,7 @@ fun LoginScreen(authViewModel: AuthViewModel, onLoginSuccess: () -> Unit) {
     var password by remember { mutableStateOf("") }
 
     val loginState by authViewModel.loginState.collectAsStateWithLifecycle()
+    val focusManager = LocalFocusManager.current                         // NEW
 
     val isEmailFieldValid = email.isEmpty() || isEmailValid(email)
 
@@ -40,13 +49,24 @@ fun LoginScreen(authViewModel: AuthViewModel, onLoginSuccess: () -> Unit) {
                     Text("Invalid email format")
                 }
             },
+            singleLine = true,                                           // NEW
+            keyboardOptions = KeyboardOptions(                           // NEW
+                keyboardType = KeyboardType.Email,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(                           // NEW
+                onNext = { focusManager.moveFocus(FocusDirection.Down) }
+            ),
             modifier = Modifier.fillMaxWidth()
         )
 
-        OutlinedTextField(
+        PasswordTextField(
             value = password,
             onValueChange = { newValue -> password = newValue },
-            label = { Text("Password") },
+            onDone = {
+                focusManager.clearFocus()
+                authViewModel.login(email, password)
+            },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -57,13 +77,12 @@ fun LoginScreen(authViewModel: AuthViewModel, onLoginSuccess: () -> Unit) {
             Text("Log in")
         }
 
-        when (loginState) {
+        when (val state = loginState) {                                  // CHANGED
             is LoginState.Loading -> {
                 CircularProgressIndicator()
             }
             is LoginState.Error -> {
-                val errorState = loginState as LoginState.Error
-                Text(errorState.message)
+                Text(state.message)                                      // CHANGED
             }
             is LoginState.Success -> {
                 LaunchedEffect(Unit) {

@@ -2,6 +2,7 @@ package com.mafi.budgetapp.di
 
 import android.content.Context
 import com.mafi.budgetapp.BuildConfig
+import com.mafi.budgetapp.data.local.CryptoManager
 import com.mafi.budgetapp.data.local.TokenDataStore
 import com.mafi.budgetapp.data.remote.AuthApiService
 import com.mafi.budgetapp.data.remote.AuthInterceptor
@@ -16,7 +17,8 @@ class AppContainer(context: Context) {
     private val baseUrl = "http://10.0.2.2:5113/"
 
     // 1. local storage
-    val tokenDataStore = TokenDataStore(context)
+    private val cryptoManager = CryptoManager()                          // NEW
+    val tokenDataStore = TokenDataStore(context, cryptoManager)          // CHANGED
 
     // 2. logging (shared by both HTTP clients)
     private val loggingInterceptor = HttpLoggingInterceptor().apply {

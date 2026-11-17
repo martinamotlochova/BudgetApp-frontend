@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- normal app theme (unchanged) -->
     <style name="Theme.BudgetApp" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <!-- splash theme: used only while the app is starting -->
+    <style name="Theme.BudgetApp.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/brand_purple</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splash_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.BudgetApp</item>
+    </style>
+
 </resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Splash icon: white sun from the "Mám jasno" logo.
+     Canvas 288x288dp (Android requirement), visible area is the inner circle (192dp). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+
+    <!-- sun core (circle, radius 26, center 144,144) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M144,118 a26,26 0 1,1 0,52 a26,26 0 1,1 0,-52 Z" />
+
+    <!-- sun rays (8 short lines with rounded ends) -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="10"
+        android:strokeLineCap="round"
+        android:pathData="M144,104 L144,90 M144,184 L144,198 M104,144 L90,144 M184,144 L198,144 M116,116 L106,106 M172,172 L182,182 M116,172 L106,182 M172,116 L182,106" />
+</vector>
